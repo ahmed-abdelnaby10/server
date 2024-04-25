@@ -6,10 +6,10 @@ const coursesRouter = require('./routes/courses.route');
 const usersRouter = require('./routes/users.route');
 const httpStatusText = require('./utils/httpStatusText')
 const path = require('path')
+const bodyParser = require('body-parser')
 
 const app = express();
 
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 const url = process.env.MONGO_URL;
 
@@ -17,8 +17,14 @@ mongoose.connect(url).then(()=>{
     console.log('MongoDB connected successfully!');
 });
 
-app.use(cors())
-app.use(express.json());
+app.use(cors({
+    origin: "*"
+}))
+
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended: false}));
+
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.use('/api/courses', coursesRouter);
 app.use('/api/users', usersRouter);
@@ -40,6 +46,8 @@ app.use((error, req, res, next)=>{
         })
 })
 
-app.listen(5000, ()=>{
+const PORT = process.env.PORT || 5000
+
+app.listen(PORT, ()=>{
     console.log("Listening on port: 5000");
 });

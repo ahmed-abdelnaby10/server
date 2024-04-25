@@ -13,6 +13,7 @@ const getAllUsers = asyncWrapper(
         const page = query.page;
         const skip = (page - 1) * limit;
         const users = await User.find({},{"__v": false, "password": false}).limit(limit).skip(skip);
+        
         res.send(
             {
                 status: httpStatus.SUCCESS,
@@ -24,8 +25,10 @@ const getAllUsers = asyncWrapper(
 
 const register = asyncWrapper(
     async (req, res, next)=>{
-        const {firstName, lastName, email, password, role} = req.body
 
+        console.log(req.body);
+
+        const {firstName, lastName, email, password, role} = req.body
         const oldUser = await User.findOne({email: email},{"__v": false, "password": false});
         if (oldUser) {
             const error = appError.create('user already exists', 400, httpStatus.FAIL)
@@ -58,6 +61,7 @@ const register = asyncWrapper(
 
 const login = asyncWrapper(
     async (req, res, next)=>{
+        console.log("loginded kjlihlh");
         const {email, password} = req.body;
         const user = await User.findOne({email: email})
 
@@ -74,10 +78,11 @@ const login = asyncWrapper(
         const matchedPassword = await bcrypt.compare(password, user.password)
 
         if (user && matchedPassword) {
+            console.log(user);
             const token = generateToken({ email: user.email, id: user._id, role: user.role })
             return res.status(200).json({
                 status: httpStatus.SUCCESS,
-                data: {token}
+                data: {user, token}
             })
         }else {
             const error = appError.create('email or password is invalid', 400, httpStatus.ERROR)
